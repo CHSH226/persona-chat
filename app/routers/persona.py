@@ -1,4 +1,4 @@
-"""人格分层管理 API。"""
+"""人格分层管理 API（需管理员权限，走 /api/admin 更全，此路由保留基础管理）。"""
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import PersonaLayer
+from ..security import require_admin
 
 router = APIRouter(prefix="/api/persona", tags=["persona"])
 
@@ -15,10 +16,12 @@ class LayerCreate(BaseModel):
     type: str = "custom"
     content: str
     weight: float = 1.0
+    is_on_demand: bool = False
+    keywords: str | None = None
     is_public: bool = True
 
 
-@router.get("/layers")
+@router.get("/layers", dependencies=[Depends(require_admin)])
 def list_layers(db: Session = Depends(get_db)):
     return [
         {
@@ -26,6 +29,8 @@ def list_layers(db: Session = Depends(get_db)):
             "name": l.name,
             "type": l.type,
             "weight": l.weight,
+            "is_on_demand": l.is_on_demand,
+            "keywords": l.keywords,
             "is_public": l.is_public,
             "is_active": l.is_active,
             "content": l.content,
@@ -34,16 +39,16 @@ def list_layers(db: Session = Depends(get_db)):
     ]
 
 
-@router.post("/layers")
+@router.post("/layers", dependencies=[Depends(require_admin)])
 def create_layer(data: LayerCreate, db: Session = Depends(get_db)):
-    layer = PersonaLayer(**data.dict())
+    layer = PersonaLayer(**data.model_dump())
     db.add(layer)
     db.commit()
     db.refresh(layer)
     return {"id": layer.id}
 
 
-@router.delete("/layers/{layer_id}")
+@router.delete("/layers/{layer_id}", dependencies=[Depends(require_admin)])
 def delete_layer(layer_id: int, db: Session = Depends(get_db)):
     layer = db.get(PersonaLayer, layer_id)
     if not layer:

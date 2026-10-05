@@ -3,22 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>数字生命</title>
+  <title>数字生命 · 登录</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="chat-wrapper">
-    <header class="chat-header">
-      <div class="header-title">数字生命</div>
-      <div class="header-status"><span class="dot"></span>在线</div>
-    </header>
-
-    <main id="messages" class="messages"></main>
-
-    <footer class="input-bar">
-      <textarea id="input" rows="1" placeholder="说点什么..." maxlength="2000"></textarea>
-      <button id="send">发送</button>
-    </footer>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>数字生命</h1>
+      <div class="sub">跟「开发者」聊天</div>
+      <div class="auth-tabs">
+        <div id="tab-login" class="active">登录</div>
+        <div id="tab-register">注册</div>
+      </div>
+      <form id="form">
+        <div class="field">
+          <label>用户名</label>
+          <input id="username" placeholder="请输入用户名" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>密码</label>
+          <input id="password" type="password" placeholder="请输入密码" autocomplete="current-password" />
+        </div>
+        <button class="btn-primary" id="submit" type="button">登录</button>
+        <div class="err" id="err"></div>
+      </form>
+    </div>
   </div>
 
   <script src="/static/app.js"></script>

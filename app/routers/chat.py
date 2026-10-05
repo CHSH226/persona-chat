@@ -1,12 +1,15 @@
-"""聊天 API。接收用户消息，拼接人格 prompt，流式调用 DeepSeek。"""
+"""聊天 API：JWT 认证 + 积分检查 + 人格拼接 + 流式调用。"""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
+from ..config import CREDITS_PER_MESSAGE
 from ..database import get_db
-from ..models import ChatMessage, PersonaLayer
+from ..models import ChatMessage, PersonaLayer, User
+from ..security import get_current_user
 from ..services.llm import build_system_prompt, stream_chat
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -14,31 +17,38 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 class ChatRequest(BaseModel):
     message: str
-    session_key: str = "default"
 
 
 @router.post("/stream")
-async def chat(req: ChatRequest, request: Request, db: Session = Depends(get_db)):
+async def chat(
+    req: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     message = req.message.strip()
     if not message:
-        return {"error": "消息不能为空"}
+        raise HTTPException(400, "消息不能为空")
 
-    # 组装历史上下文 + 当前人格
+    if current_user.credits <= 0:
+        raise HTTPException(402, "积分不足，请先兑换积分")
+
+    # 人格层：普通层 + 按需层（按需层命中 user_message 关键词才注入）
+    layers = (
+        db.query(PersonaLayer)
+        .filter(or_(PersonaLayer.is_public == True), PersonaLayer.is_active == True)  # noqa: E712
+        .all()
+    )
+    system_prompt = build_system_prompt(layers, message)
+
+    # 组装历史上下文（最近 20 条）
     history = (
         db.query(ChatMessage)
-        .filter(ChatMessage.session_key == req.session_key)
+        .filter(ChatMessage.user_id == current_user.id)
         .order_by(ChatMessage.id.desc())
         .limit(20)
         .all()
     )
     history = list(reversed(history))
-
-    layers = (
-        db.query(PersonaLayer)
-        .filter(PersonaLayer.is_public == True, PersonaLayer.is_active == True)  # noqa: E712
-        .all()
-    )
-    system_prompt = build_system_prompt(layers)
 
     messages = [{"role": "system", "content": system_prompt}]
     for h in history:
@@ -46,18 +56,23 @@ async def chat(req: ChatRequest, request: Request, db: Session = Depends(get_db)
     messages.append({"role": "user", "content": message})
 
     # 记录用户输入
-    db.add(ChatMessage(session_key=req.session_key, role="user", content=message))
+    db.add(ChatMessage(user_id=current_user.id, role="user", content=message))
     db.commit()
 
     async def gen_and_save():
+        full = ""
         try:
-            full = ""
             async for delta in stream_chat(messages):
                 full += delta
                 yield delta
+        except Exception as e:
+            yield f"\n[出错: {e}]"
+            full += f"\n[err {e}]"
         finally:
+            # 有回复则扣积分 + 存 AI 回复
             if full:
-                db.add(ChatMessage(session_key=req.session_key, role="assistant", content=full))
+                current_user.credits = max(0, current_user.credits - CREDITS_PER_MESSAGE)
+                db.add(ChatMessage(user_id=current_user.id, role="assistant", content=full))
                 db.commit()
 
     return StreamingResponse(gen_and_save(), media_type="text/plain; charset=utf-8")

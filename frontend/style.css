@@ -1,125 +1,106 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #ededed;
   height: 100vh;
-  display: flex;
-  justify-content: center;
 }
 
-.chat-wrapper {
-  width: 100%;
-  max-width: 640px;
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+/* ===== 登录/注册页 ===== */
+.auth-wrap {
   height: 100vh;
   display: flex;
-  flex-direction: column;
-  background: #fff;
-}
-
-.chat-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #eee;
-  border-bottom: 1px solid #ddd;
-  flex-shrink: 0;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(160deg, #0f2027, #203a43, #2c5364);
 }
-
-.header-title {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.header-status {
-  font-size: 13px;
-  color: #888;
-}
-
-.header-status .dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #07c160;
-  margin-right: 4px;
-}
-
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: #f7f7f7;
-}
-
-.msg {
-  max-width: 82%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  line-height: 1.5;
-  font-size: 15px;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-.msg.user {
-  align-self: flex-end;
-  background: #95ec69;
-}
-
-.msg.ai {
-  align-self: flex-start;
+.auth-card {
+  width: 100%;
+  max-width: 380px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.3);
 }
+.auth-card h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
+.auth-card .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 24px; }
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 12px 14px; font-size: 15px;
+  border: 1px solid #ddd; border-radius: 10px; outline: none;
+}
+.field input:focus { border-color: #07c160; }
+.btn-primary {
+  width: 100%; padding: 13px; font-size: 16px; color: #fff;
+  background: #07c160; border: none; border-radius: 10px; margin-top: 6px;
+}
+.btn-primary:disabled { background: #a5d6b7; }
+.auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+.auth-tabs div { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; color: #888; cursor: pointer; }
+.auth-tabs div.active { color: #07c160; border-bottom: 2px solid #07c160; font-weight: 600; }
+.err { color: #e34d59; font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
 
-.msg.typing {
-  color: #999;
-  font-style: italic;
-}
+/* ===== 聊天页 ===== */
+.chat-wrapper { width: 100%; max-width: 640px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; background: #fff; }
+.chat-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #eee; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+.header-title { font-weight: 600; font-size: 16px; }
+.header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #888; }
+.header-right .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #07c160; margin-right: 4px; }
+.credits-pill { background: #07c160; color: #fff; border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+.icon-btn { background: none; border: none; font-size: 13px; color: #07c160; text-decoration: underline; }
 
-.input-bar {
-  display: flex;
-  gap: 8px;
-  padding: 10px 12px;
-  background: #f8f8f8;
-  border-top: 1px solid #ddd;
-  flex-shrink: 0;
-}
+.announce { background: #fffbe6; color: #ad8b00; font-size: 12px; padding: 8px 16px; border-bottom: 1px solid #ffe58f; flex-shrink: 0; }
+.messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #f7f7f7; }
+.msg { max-width: 82%; padding: 10px 14px; border-radius: 10px; line-height: 1.5; font-size: 15px; word-break: break-word; white-space: pre-wrap; }
+.msg.user { align-self: flex-end; background: #95ec69; }
+.msg.ai { align-self: flex-start; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.msg.typing { color: #999; font-style: italic; }
+.input-bar { display: flex; gap: 8px; padding: 10px 12px; background: #f8f8f8; border-top: 1px solid #ddd; flex-shrink: 0; }
+.input-bar textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 8px; padding: 10px 12px; font-size: 16px; outline: none; max-height: 120px; }
+.input-bar textarea:focus { border-color: #07c160; }
+.input-bar button { width: 70px; border: none; border-radius: 8px; background: #07c160; color: #fff; font-size: 16px; }
+.input-bar button:disabled { background: #a5d6b7; }
 
-.input-bar textarea {
-  flex: 1;
-  resize: none;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 16px;
-  outline: none;
-  font-family: inherit;
-}
+/* 兑换码弹窗 */
+.modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.modal { background: #fff; border-radius: 14px; padding: 24px; width: 100%; max-width: 340px; }
+.modal h3 { font-size: 17px; margin-bottom: 16px; }
+.modal input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 12px; outline: none; }
+.modal .row { display: flex; gap: 10px; }
+.modal .row button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; }
+.modal .cancel { background: #eee; color: #666; }
+.modal .ok { background: #07c160; color: #fff; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 200; }
 
-.input-bar textarea:focus {
-  border-color: #07c160;
-}
-
-.input-bar button {
-  width: 70px;
-  border: none;
-  border-radius: 8px;
-  background: #07c160;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.input-bar button:disabled {
-  background: #a5d6b7;
-}
+/* ===== 管理后台 ===== */
+.admin-wrap { max-width: 1100px; margin: 0 auto; background: #fff; min-height: 100vh; }
+.admin-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #0f2027; color: #fff; }
+.admin-top h1 { font-size: 18px; }
+.admin-top .right { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.admin-tabs { display: flex; gap: 4px; padding: 8px 12px; background: #f5f5f5; border-bottom: 1px solid #e5e5e5; overflow-x: auto; }
+.admin-tabs button { padding: 8px 18px; border: none; background: transparent; font-size: 14px; color: #666; border-radius: 8px; white-space: nowrap; }
+.admin-tabs button.active { background: #07c160; color: #fff; }
+.panel { padding: 20px; }
+.panel.hidden { display: none; }
+.panel h2 { font-size: 16px; margin-bottom: 14px; }
+.card { background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
+th { color: #888; }
+.actions button { margin-right: 6px; padding: 5px 10px; border: none; border-radius: 6px; font-size: 12px; }
+.btn-green { background: #07c160; color: #fff; }
+.btn-gray { background: #eee; color: #666; }
+.btn-red { background: #e34d59; color: #fff; }
+input.frm, select.frm, textarea.frm { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 10px; outline: none; }
+textarea.frm { min-height: 200px; resize: vertical; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-bottom: 10px; }
+.frm-inline { display: flex; gap: 10px; margin-bottom: 14px; }
+.chatlog { background: #f7f7f7; border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 13px; }
+.chatlog .who { font-weight: 600; }
+.chatlog .content { margin-top: 4px; white-space: pre-wrap; }
+.logout { background: #e34d59; border: none; color: #fff; padding: 6px 12px; border-radius: 6px; }

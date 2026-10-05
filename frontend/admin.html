@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理后台 · 数字生命</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="admin-wrap">
+    <div class="admin-top">
+      <h1>数字生命 · 管理后台</h1>
+      <div class="right">
+        <span id="who">管理员</span>
+        <button class="logout" id="logoutBtn">退出</button>
+      </div>
+    </div>
+
+    <div class="admin-tabs">
+      <button data-tab="codes" class="active">兑换码</button>
+      <button data-tab="users">用户</button>
+      <button data-tab="announce">公告</button>
+      <button data-tab="personas">人格层</button>
+    </div>
+
+    <!-- 兑换码 -->
+    <div class="panel" id="tab-codes">
+      <h2>创建兑换码</h2>
+      <div class="form-grid">
+        <input class="frm" id="codeStr" placeholder="兑换码(如 NEICE001)" />
+        <input class="frm" id="codeCredit" type="number" placeholder="积分" value="100" />
+        <input class="frm" id="codeMaxUses" type="number" placeholder="最大次数(0=无限)" value="0" />
+      </div>
+      <button class="btn-green" id="codeCreate">创建</button>
+      <div class="err" id="codeErr"></div>
+      <h2 style="margin-top:24px;">兑换码列表</h2>
+      <div id="codeList"></div>
+    </div>
+
+    <!-- 用户 -->
+    <div class="panel hidden" id="tab-users">
+      <h2>用户列表</h2>
+      <div id="userList"></div>
+    </div>
+
+    <!-- 公告 -->
+    <div class="panel hidden" id="tab-announce">
+      <h2>发布公告</h2>
+      <textarea class="frm" id="annContent" placeholder="公告内容，将显示在聊天页顶部"></textarea>
+      <button class="btn-green" id="annCreate">发布</button>
+      <div class="err" id="annErr"></div>
+      <h2 style="margin-top:24px;">公告列表</h2>
+      <div id="annList"></div>
+    </div>
+
+    <!-- 人格层 -->
+    <div class="panel hidden" id="tab-personas">
+      <h2>人格分层管理</h2>
+      <div class="form-grid">
+        <input class="frm" id="pName" placeholder="名称(如 性格/经历/语气)" />
+        <select class="frm" id="pType">
+          <option value="boundaries">边界</option>
+          <option value="role">身份</option>
+          <option value="voice">语气</option>
+          <option value="values">三观</option>
+          <option value="story">经历(按需)</option>
+          <option value="custom">自定义</option>
+        </select>
+        <input class="frm" id="pWeight" type="number" step="0.1" placeholder="权重 0-1" value="1" />
+        <input class="frm" id="pKeywords" placeholder="关键词(仅按需层，逗号分隔)" />
+      </div>
+      <textarea class="frm" id="pContent" placeholder="md 内容..."></textarea>
+      <label style="font-size:13px;margin-bottom:10px;display:block;">
+        <input type="checkbox" id="pOnDemand" /> 按需注入（问到关键词才注入）
+      </label>
+      <button class="btn-green" id="pCreate">新增人格层</button>
+      <div class="err" id="pErr"></div>
+      <h2 style="margin-top:24px;">人格层列表</h2>
+      <div id="pList"></div>
+    </div>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>
