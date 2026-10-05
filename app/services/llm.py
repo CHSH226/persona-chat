@@ -9,18 +9,26 @@ from ..config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL
 DEEPSEEK_CHAT_URL = f"{DEEPSEEK_BASE_URL}/chat/completions"
 
 
+DEFAULT_OUTPUT_RULE = (
+    "【输出规则】回复要简洁克制，一般不超过150个中文字符。"
+    "除非用户明确要求长篇，否则不要长篇大论。先直接回答，别铺垫。"
+    "人格层若有更高的输出要求，以人格层为准。"
+)
+
+
 def build_system_prompt(layers):
     """把多个人格层按权重拼成 system prompt。
 
     高权重层前置并按"严格遵守"强调，低权重层后置并注明"参考即可"。
     """
+    parts = [DEFAULT_OUTPUT_RULE]
+
     if not layers:
-        return "你是一个乐于助人的 AI 助手。"
+        return "\n\n".join(parts)
 
     # 权重从高到低排序
     layers = sorted(layers, key=lambda l: l.weight or 0, reverse=True)
 
-    parts = []
     for layer in layers:
         content = (layer.content or "").strip()
         if not content:
