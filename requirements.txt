@@ -1,0 +1,8 @@
+# 依赖
+fastapi
+uvicorn[standard]
+httpx
+python-dotenv
+
+# 数据库
+sqlalchemy

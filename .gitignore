@@ -1,0 +1,11 @@
+# 环境相关
+.env
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# 运行时数据
+*.db
+*.sqlite3
+.DS_Store
