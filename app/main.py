@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
+from .middleware import SecurityMiddleware
 from .routers import admin, announcement, auth, chat, code, persona
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +26,8 @@ class NoCacheStaticFiles(StaticFiles):
 app = FastAPI(title="persona-chat")
 
 Base.metadata.create_all(bind=engine)
+
+app.add_middleware(SecurityMiddleware)
 
 app.include_router(auth.router)
 app.include_router(chat.router)

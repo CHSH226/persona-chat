@@ -87,18 +87,62 @@ async function loadUsers() {
          <td class="actions">
            <button class="btn-gray" onclick="showChats(${u.id},'${u.username}')">聊天记录</button>
            <button class="btn-gray" onclick="setCredits(${u.id},'${u.username}')">改积分</button>
+           <button class="btn-gray" onclick="toggleUser(${u.id})">${u.is_active ? "禁用" : "启用"}</button>
+           ${u.is_admin ? "" : `<button class="btn-red" onclick="delUser(${u.id},'${u.username}')">删除</button>`}
          </td></tr>`)
       .join("") + `</table>`;
   } catch (e) { d.innerHTML = `<div class="card">${e.message}</div>`; }
 }
 async function setCredits(id, name) {
-  const v = prompt("给用户 " + name + " 设置积分（正数增加/负数设置）");
-  if (v === null) return;
-  const n = parseInt(v);
-  if (isNaN(n)) return;
-  // 正数=增加到该值，简单起见作为直接设置的值（>=0）
-  try { await api("/api/admin/users/" + id, "PATCH", { credits: Math.max(0, n) }); loadUsers(); }
+  const mode = prompt("给用户 " + name + " 加积分 [输入：+100 加100分  /  s:100 设为100  /  -50 扣50分]");
+  if (mode === null) return;
+  const input = mode.trim();
+  if (input === "") return;
+  let payload = {};
+  if (/^s:/i.test(input)) {
+    const val = parseInt(input.slice(2));
+    if (isNaN(val)) return;
+    payload = { credits: Math.max(0, val), credits_action: "set" };
+  } else if (/^[+-]?.?\d+$/.test(input)) {
+    const val = parseInt(input);
+    payload = { credits: val, credits_action: "add" };
+  } else {
+    alert("格式：+100 加分 / -50 扣分 / s:100 设为该值");
+    return;
+  }
+  try { const r = await api("/api/admin/users/" + id, "PATCH", payload); alert("当前积分: " + r.credits); loadUsers(); }
   catch (e) { alert(e.message); }
+}
+
+async function toggleUser(id) {
+  try {
+    const u = await api("/api/admin/users/" + id);
+    await api("/api/admin/users/" + id, "PATCH", { is_active: !u.is_active });
+    loadUsers();
+  } catch (e) { alert(e.message); }
+}
+
+async function delUser(id, name) {
+  if (!confirm("确认删除用户 " + name + "？将同时删除其聊天记录，且不可恢复！")) return;
+  try { await api("/api/admin/users/" + id, "DELETE"); toast("已删除用户 " + name); loadUsers(); }
+  catch (e) { alert(e.message); }
+}
+
+async function exportAllChats() {
+  try {
+    const data = await api("/api/admin/chats/all");
+    if (!data.length) { alert("暂无聊天记录"); return; }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chats_export_" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast("已导出 " + data.length + " 条聊天记录");
+  } catch (e) { alert(e.message); }
 }
 async function showChats(id, name) {
   try {
@@ -211,5 +255,8 @@ document.getElementById("pCreate").addEventListener("click", async () => {
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function toast(msg) { alert(msg); }
+
+document.getElementById("who").textContent = me.username || "管理员";
+document.getElementById("exportChatsBtn").addEventListener("click", exportAllChats);
 
 loadCodes();

@@ -94,9 +94,23 @@ def list_users(user: User = Depends(get_current_user), db: Session = Depends(get
 
 class CreditPatch(BaseModel):
     credits: int | None = None
+    credits_action: str = "set"  # set=设为某值, add=增量增加(可为负)
     is_active: bool | None = None
     is_admin: bool | None = None
     password: str | None = None
+
+
+@router.get("/users/{user_id}")
+def get_user(user_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    _admin_user(user)
+    u = db.get(User, user_id)
+    if not u:
+        raise HTTPException(404, "用户不存在")
+    return {
+        "id": u.id, "username": u.username, "credits": u.credits,
+        "is_admin": u.is_admin, "is_active": u.is_active,
+        "created_at": u.created_at.isoformat() if u.created_at else None,
+    }
 
 
 @router.patch("/users/{user_id}")
@@ -106,7 +120,10 @@ def patch_user(user_id: int, req: CreditPatch, user: User = Depends(get_current_
     if not u:
         raise HTTPException(404, "用户不存在")
     if req.credits is not None:
-        u.credits = max(0, req.credits)
+        if req.credits_action == "add":
+            u.credits = max(0, u.credits + req.credits)
+        else:
+            u.credits = max(0, req.credits)
     if req.is_active is not None:
         u.is_active = req.is_active
     if req.is_admin is not None:
@@ -115,6 +132,24 @@ def patch_user(user_id: int, req: CreditPatch, user: User = Depends(get_current_
         u.password_hash = hash_password(req.password)
     db.commit()
     return {"ok": True, "credits": u.credits}
+
+
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    _admin_user(user)
+    if user_id == user.id:
+        raise HTTPException(400, "不能删除当前登录的管理员账号")
+    u = db.get(User, user_id)
+    if not u:
+        raise HTTPException(404, "用户不存在")
+    if u.is_admin:
+        raise HTTPException(400, "不能删除管理员账号")
+    # 清理关联数据
+    db.query(ChatMessage).filter(ChatMessage.user_id == user_id).delete()
+    db.query(RedeemHistory).filter(RedeemHistory.user_id == user_id).delete()
+    db.delete(u)
+    db.commit()
+    return {"ok": True, "deleted": user_id}
 
 
 @router.get("/users/{user_id}/chats")
@@ -128,6 +163,31 @@ def user_chats(user_id: int, user: User = Depends(get_current_user), db: Session
             "created_at": m.created_at.isoformat() if m.created_at else None,
         }
         for m in db.query(ChatMessage).filter(ChatMessage.user_id == user_id).order_by(ChatMessage.id).all()
+    ]
+
+
+# ---------- 导出全部聊天（用于训练/优化） ----------
+
+
+@router.get("/chats/all")
+def export_all_chats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    _admin_user(user)
+    rows = (
+        db.query(ChatMessage, User.username)
+        .join(User, ChatMessage.user_id == User.id, isouter=True)
+        .order_by(ChatMessage.id)
+        .all()
+    )
+    return [
+        {
+            "id": m.id,
+            "user_id": m.user_id,
+            "username": username,
+            "role": m.role,
+            "content": m.content,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        }
+        for m, username in rows
     ]
 
 
