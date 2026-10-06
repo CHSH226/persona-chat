@@ -105,7 +105,8 @@ async function send() {
   const text = inputEl.value.trim();
   if (!text || busy) return;
   if (me.credits <= 0) {
-    toast("积分不足，请先输入兑换码");
+    toast("积分不足，请兑换后再聊");
+    redeemMask.classList.remove("hidden");
     return;
   }
   inputEl.value = "";

@@ -77,6 +77,8 @@ input, textarea { font-family: inherit; }
 .modal .ok { background: #07c160; color: #fff; }
 .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 200; }
 
+.hidden { display: none !important; }
+
 /* ===== 管理后台 ===== */
 .admin-wrap { max-width: 1100px; margin: 0 auto; background: #fff; min-height: 100vh; }
 .admin-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #0f2027; color: #fff; }
