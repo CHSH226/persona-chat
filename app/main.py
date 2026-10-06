@@ -12,6 +12,16 @@ from .routers import admin, announcement, auth, chat, code, persona
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
+
+class NoCacheStaticFiles(StaticFiles):
+    """静态前端文件禁用缓存，保证用户每次拉到最新版本。"""
+
+    async def get_response(self, path, scope):
+        resp = await super().get_response(path, scope)
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        return resp
+
+
 app = FastAPI(title="persona-chat")
 
 Base.metadata.create_all(bind=engine)
@@ -23,19 +33,25 @@ app.include_router(persona.router)
 app.include_router(announcement.router)
 app.include_router(admin.router)
 
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+app.mount("/static", NoCacheStaticFiles(directory=FRONTEND_DIR), name="static")
+
+
+def _page(html: str):
+    resp = FileResponse(FRONTEND_DIR / html)
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return resp
 
 
 @app.get("/")
 def index():
-    return FileResponse(FRONTEND_DIR / "index.html")
+    return _page("index.html")
 
 
 @app.get("/chat")
 def chat_page():
-    return FileResponse(FRONTEND_DIR / "chat.html")
+    return _page("chat.html")
 
 
 @app.get("/admin")
 def admin_page():
-    return FileResponse(FRONTEND_DIR / "admin.html")
+    return _page("admin.html")
